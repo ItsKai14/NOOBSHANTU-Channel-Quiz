@@ -136,6 +136,22 @@ function App() {
     pdf.save("quiz_questions.pdf");
   };
 
+  const clearAllQuestions = () => {
+    const ok = window.confirm(
+      "⚠️ This will delete ALL questions permanently.\nAre you sure?"
+    );
+    if (!ok) return;
+
+    setQaList([]);
+    localStorage.removeItem("qa-data");
+
+    // reset quiz state just in case
+    setPlayMode(false);
+    setCurrent(0);
+    setShowAnswer(false);
+  };
+
+
   /* ---------------- AUTO REVEAL ---------------- */
   useEffect(() => {
     if (!playMode || !autoReveal || showAnswer || pauseTimers) return;
@@ -337,6 +353,8 @@ function App() {
             </label>
             <button className="btn btn-outline-secondary btn-sm" onClick={exportJSON}>Export JSON</button>
             <button className="btn btn-success btn-sm" onClick={exportPDF}>Export PDF</button>
+            <button className="btn btn-danger btn-sm" onClick={clearAllQuestions}>🗑 Clear All Questions</button>
+
             <button className="btn btn-success btn-sm" disabled={!qaList.length}
               onClick={() => { setPlayMode(true); setCurrent(0); setShowAnswer(false); }}>
               ▶ Start Quiz
