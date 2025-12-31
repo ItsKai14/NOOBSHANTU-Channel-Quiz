@@ -16,6 +16,9 @@ function App() {
     localStorage.getItem("is-host") === "true"
   );
 
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+
   const [locked, setLocked] = useState(false);
   const [playMode, setPlayMode] = useState(false);
   const [current, setCurrent] = useState(0);
@@ -81,13 +84,24 @@ function App() {
 
   /* ---------------- HOST LOCK ---------------- */
   const unlockHost = () => {
-    const pin = prompt("Enter host PIN");
-    if (pin === "3112") {
+    setShowPinModal(true);
+  };
+
+  const submitPin = () => {
+    if (pinInput === "3112") {
       setIsHost(true);
       localStorage.setItem("is-host", "true");
+      setShowPinModal(false);
+      setPinInput("");
     } else {
       alert("Wrong PIN");
+      setPinInput("");
     }
+  };
+
+  const cancelPin = () => {
+    setShowPinModal(false);
+    setPinInput("");
   };
 
   const lockHost = () => {
@@ -176,7 +190,7 @@ function App() {
   useEffect(() => {
     if (!playMode || !autoReveal || showAnswer || pauseTimers) return;
 
-    const delay = 30;
+    const delay = 15;
     setIsDelayPhase(true);
     setRevealCountdown(delay);
 
@@ -360,7 +374,7 @@ function App() {
                   </div>
                   <input type="number" className="form-control mt-2" disabled={!autoReveal}
                     value={autoRevealTime} onChange={e => setAutoRevealTime(+e.target.value)} />
-                  <small className="text-muted">Starts after 30s delay</small>
+                  <small className="text-muted">Starts after a set ammount of delay</small>
                 </div>
               </div>
 
@@ -423,7 +437,36 @@ function App() {
           </Droppable>
         </DragDropContext>
       }
-    </div>
+      {/* PIN MODAL */}
+      {showPinModal && (
+        <>
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">🔐 Host Login</h5>
+                  <button type="button" className="btn-close" onClick={cancelPin}></button>
+                </div>
+                <div className="modal-body">
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Enter PIN"
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && submitPin()}
+                  />
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={cancelPin}>Cancel</button>
+                  <button type="button" className="btn btn-primary" onClick={submitPin}>Login</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop show"></div>
+        </>
+      )}    </div>
   );
 }
 
