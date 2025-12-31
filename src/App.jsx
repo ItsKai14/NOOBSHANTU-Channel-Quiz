@@ -12,6 +12,10 @@ function App() {
   const [points, setPoints] = useState("");
   const [editId, setEditId] = useState(null);
 
+  const [isHost, setIsHost] = useState(
+    localStorage.getItem("is-host") === "true"
+  );
+
   const [locked, setLocked] = useState(false);
   const [playMode, setPlayMode] = useState(false);
   const [current, setCurrent] = useState(0);
@@ -73,6 +77,22 @@ function App() {
 
   const remove = (id) => {
     setQaList(qaList.filter(q => q.id !== id));
+  };
+
+  /* ---------------- HOST LOCK ---------------- */
+  const unlockHost = () => {
+    const pin = prompt("Enter host PIN");
+    if (pin === "3112") {
+      setIsHost(true);
+      localStorage.setItem("is-host", "true");
+    } else {
+      alert("Wrong PIN");
+    }
+  };
+
+  const lockHost = () => {
+    setIsHost(false);
+    localStorage.removeItem("is-host");
   };
 
   /* ---------------- DRAG & DROP ---------------- */
@@ -271,100 +291,113 @@ function App() {
     <div className="container py-4">
       <h2 className="text-center mb-3">NOOBSHANTU Channel Quiz 😁</h2>
 
-      {/* ADD / EDIT */}
-      <div className="card shadow-sm mb-3">
-        <div className="card-header d-flex justify-content-between">
-          <h5>Add / Edit Question</h5>
-          <button className="btn btn-outline-primary btn-sm" onClick={() => setShowAddForm(!showAddForm)}>
-            {showAddForm ? "Hide ▲" : "Add ▼"}
+      {!isHost && (
+        <div className="text-center mt-5">
+          <button className="btn btn-primary" onClick={unlockHost}>
+            🔐 Host Login
           </button>
         </div>
+      )}
 
-        {showAddForm &&
-          <div className="card-body">
-            <input className="form-control mb-2" placeholder="Question" value={question} onChange={e => setQuestion(e.target.value)} />
-            <textarea className="form-control mb-2" placeholder="Answer" value={answer} onChange={e => setAnswer(e.target.value)} />
-            <input type="number" className="form-control mb-3" placeholder="Points" value={points} onChange={e => setPoints(e.target.value)} />
-            <button className="btn btn-primary w-100" onClick={submit}>
-              {editId ? "Update" : "Add Question"}
+      {/* ADD / EDIT */}
+      {isHost && (
+        <div className="card shadow-sm mb-3">
+          <div className="card-header d-flex justify-content-between">
+            <h5>Add / Edit Question</h5>
+            <button className="btn btn-outline-primary btn-sm" onClick={() => setShowAddForm(!showAddForm)}>
+              {showAddForm ? "Hide ▲" : "Add ▼"}
             </button>
           </div>
-        }
-      </div>
+
+          {showAddForm &&
+            <div className="card-body">
+              <input className="form-control mb-2" placeholder="Question" value={question} onChange={e => setQuestion(e.target.value)} />
+              <textarea className="form-control mb-2" placeholder="Answer" value={answer} onChange={e => setAnswer(e.target.value)} />
+              <input type="number" className="form-control mb-3" placeholder="Points" value={points} onChange={e => setPoints(e.target.value)} />
+              <button className="btn btn-primary w-100" onClick={submit}>
+                {editId ? "Update" : "Add Question"}
+              </button>
+            </div>
+          }
+        </div>
+      )}
 
       {/* SETTINGS */}
-      <div className="card shadow-sm mb-3">
-        <div className="card-body">
-          <h5>Quiz Settings</h5>
+      {isHost && (
+        <div className="card shadow-sm mb-3">
+          <div className="card-body">
+            <h5>Quiz Settings</h5>
 
 
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="checkbox"
-              checked={showQuestions}
-              onChange={() => setShowQuestions(!showQuestions)} />
-            <label className="form-check-label">Show Questions</label>
-          </div>
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox"
+                checked={showQuestions}
+                onChange={() => setShowQuestions(!showQuestions)} />
+              <label className="form-check-label">Show Questions</label>
+            </div>
 
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="checkbox"
-              checked={revealAnswers}
-              onChange={() => setRevealAnswers(!revealAnswers)} />
-            <label className="form-check-label">Show Answers</label>
-          </div>
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox"
+                checked={revealAnswers}
+                onChange={() => setRevealAnswers(!revealAnswers)} />
+              <label className="form-check-label">Show Answers</label>
+            </div>
 
-          <div className="form-check form-switch">
-            <input className="form-check-input" type="checkbox"
-              checked={locked}
-              onChange={() => setLocked(!locked)} />
-            <label className="form-check-label">
-              Lock Order (disable drag & shuffle)
-            </label>
-          </div>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <div className="border rounded p-3">
-                <div className="form-check form-switch">
-                  <input className="form-check-input" type="checkbox" checked={autoReveal} onChange={() => setAutoReveal(!autoReveal)} />
-                  <label className="form-check-label">Auto Reveal Answer</label>
+            <div className="form-check form-switch">
+              <input className="form-check-input" type="checkbox"
+                checked={locked}
+                onChange={() => setLocked(!locked)} />
+              <label className="form-check-label">
+                Lock Order (disable drag & shuffle)
+              </label>
+            </div>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="border rounded p-3">
+                  <div className="form-check form-switch">
+                    <input className="form-check-input" type="checkbox" checked={autoReveal} onChange={() => setAutoReveal(!autoReveal)} />
+                    <label className="form-check-label">Auto Reveal Answer</label>
+                  </div>
+                  <input type="number" className="form-control mt-2" disabled={!autoReveal}
+                    value={autoRevealTime} onChange={e => setAutoRevealTime(+e.target.value)} />
+                  <small className="text-muted">Starts after 30s delay</small>
                 </div>
-                <input type="number" className="form-control mt-2" disabled={!autoReveal}
-                  value={autoRevealTime} onChange={e => setAutoRevealTime(+e.target.value)} />
-                <small className="text-muted">Starts after 30s delay</small>
+              </div>
+
+              <div className="col-md-6">
+                <div className="border rounded p-3">
+                  <div className="form-check form-switch">
+                    <input className="form-check-input" type="checkbox" checked={autoNext} onChange={() => setAutoNext(!autoNext)} />
+                    <label className="form-check-label">Auto Next Question</label>
+                  </div>
+                  <input type="number" className="form-control mt-2" disabled={!autoNext}
+                    value={autoNextTime} onChange={e => setAutoNextTime(+e.target.value)} />
+                    <small className="text-muted">Starts after answer reveal</small>
+                </div>
               </div>
             </div>
 
-            <div className="col-md-6">
-              <div className="border rounded p-3">
-                <div className="form-check form-switch">
-                  <input className="form-check-input" type="checkbox" checked={autoNext} onChange={() => setAutoNext(!autoNext)} />
-                  <label className="form-check-label">Auto Next Question</label>
-                </div>
-                <input type="number" className="form-control mt-2" disabled={!autoNext}
-                  value={autoNextTime} onChange={e => setAutoNextTime(+e.target.value)} />
-                <small className="text-muted">Starts after answer reveal</small>
-              </div>
+            <div className="mt-3 d-flex flex-wrap gap-2">
+              <label className="btn btn-outline-primary btn-sm">
+                Import JSON
+                <input type="file" hidden accept=".json" onChange={importJSON} />
+              </label>
+              <button className="btn btn-outline-secondary btn-sm" onClick={exportJSON}>Export JSON</button>
+              <button className="btn btn-success btn-sm" onClick={exportPDF}>Export PDF</button>
+              <button className="btn btn-danger btn-sm" onClick={clearAllQuestions}>🗑 Clear All Questions</button>
+              <button className="btn btn-warning btn-sm" onClick={lockHost}>🔒 Lock Host</button>
+
+              <button className="btn btn-success btn-sm" disabled={!qaList.length}
+                onClick={() => { setPlayMode(true); setCurrent(0); setShowAnswer(false); }}>
+                ▶ Start Quiz
+              </button>
             </div>
-          </div>
-
-          <div className="mt-3 d-flex flex-wrap gap-2">
-            <label className="btn btn-outline-primary btn-sm">
-              Import JSON
-              <input type="file" hidden accept=".json" onChange={importJSON} />
-            </label>
-            <button className="btn btn-outline-secondary btn-sm" onClick={exportJSON}>Export JSON</button>
-            <button className="btn btn-success btn-sm" onClick={exportPDF}>Export PDF</button>
-            <button className="btn btn-danger btn-sm" onClick={clearAllQuestions}>🗑 Clear All Questions</button>
-
-            <button className="btn btn-success btn-sm" disabled={!qaList.length}
-              onClick={() => { setPlayMode(true); setCurrent(0); setShowAnswer(false); }}>
-              ▶ Start Quiz
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* QUESTION LIST */}
-      {showQuestions &&
+      {isHost && showQuestions &&
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="list">
             {(p) => (
